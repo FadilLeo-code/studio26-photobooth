@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { usePhotoStore } from "@/store/usePhotoStore";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Download, ArrowLeft, Palette, Wand2, RefreshCcw, Home, LayoutTemplate, Heart } from "lucide-react";
 import Link from "next/link";
 import html2canvas from "html2canvas";

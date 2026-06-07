@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Camera, Zap, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { usePhotoStore } from "@/store/usePhotoStore"; 
