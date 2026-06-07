@@ -74,7 +74,7 @@ export default function LandingPage() {
           transition={{ delay: 0.3 }}
           className="text-xl md:text-2xl font-bold max-w-2xl mb-12 bg-white inline-block px-4 py-2 border-2 border-black border-dashed"
         >
-          Masuk ke dimensi baru. Bikin foto bareng temen, sahabat atau pacar dengan frame yang menarik dan keren!
+          Masuk ke dimensi baru. Abadikan momen seru bareng temen, sahabat atau pacar dengan Photobooth digital menarik dan keren!
         </motion.p>
 
         {/* CTAs */}
