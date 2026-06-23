@@ -2,97 +2,60 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Image as ImageIcon, Star, Flame } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Flame, CloudCog } from "lucide-react";
 
 export default function GalleryPage() {
-  // Data bayangan (dummy) untuk photostrip
-  // Kita menggunakan gambar placeholder dari Unsplash yang mensimulasikan foto portrait
-  const dummyPhotostrips = Array.from({ length: 12 }).map((_, i) => ({
-    id: i,
-    imageUrl: `https://images.unsplash.com/photo-${1500000000000 + i * 100000}?auto=format&fit=crop&w=400&q=80`,
-    likes: Math.floor(Math.random() * 500) + 10,
-    theme: ["Classic", "Strike", "Esports", "Neon"][Math.floor(Math.random() * 4)],
-    height: Math.floor(Math.random() * (400 - 250 + 1) + 250), // Random height untuk efek Masonry
-  }));
-
   return (
-    <div className="min-h-screen bg-white text-black font-sans p-4 md:p-8 bg-[radial-gradient(#cbd5e1_2px,transparent_2px)] [background-size:24px_24px]">
+    <div className="min-h-screen bg-white text-black font-sans flex flex-col justify-between bg-[radial-gradient(#cbd5e1_2px,transparent_2px)] [background-size:24px_24px]">
       
-      {/* Header Galeri */}
-      <header className="max-w-7xl mx-auto flex items-center justify-between mb-12 bg-[#00E5FF] p-4 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <Link href="/" className="p-2 bg-white border-2 border-black hover:translate-y-1 hover:shadow-none transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <ArrowLeft strokeWidth={3} />
-        </Link>
-        <h1 className="text-2xl font-black uppercase tracking-widest italic flex gap-2 items-center">
-          <ImageIcon size={28} fill="currentColor" /> Hall of Fame
-        </h1>
-        <div className="hidden md:flex items-center gap-2 font-black uppercase bg-[#FFE600] px-4 py-2 border-2 border-black -skew-x-6">
-          <Flame size={20} className="text-[#FF0054]" /> Trending Now
-        </div>
-      </header>
+      <div className="p-4 md:p-8">
+        {/* Header Galeri */}
+        <header className="max-w-6xl mx-auto flex items-center justify-between mb-12 bg-[#00E5FF] p-4 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <Link href="/" className="p-2 bg-white border-2 border-black hover:translate-y-1 hover:shadow-none transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <ArrowLeft strokeWidth={3} />
+          </Link>
+          <h1 className="text-xl md:text-2xl font-black uppercase tracking-widest italic flex gap-2 items-center">
+            <ImageIcon size={28} fill="currentColor" className="hidden sm:block" /> Hall of Fame
+          </h1>
+          <div className="hidden md:flex items-center gap-2 font-black uppercase bg-[#FFE600] px-4 py-2 border-2 border-black -skew-x-6">
+            <Flame size={20} className="text-[#FF0054]" /> Trending Now
+          </div>
+        </header>
 
-      {/* Masonry Grid Area */}
-      <main className="max-w-7xl mx-auto">
-        {/* Menggunakan columns dari Tailwind untuk efek Masonry yang sangat ringan */}
-        <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
-          {dummyPhotostrips.map((strip, index) => (
-            <motion.div
-              key={strip.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }} // Lazy loading trigger
-              transition={{ duration: 0.5, delay: (index % 4) * 0.1 }}
-              className="break-inside-avoid relative group"
+        {/* COMING SOON AREA */}
+        <main className="max-w-4xl mx-auto mt-10 md:mt-20 mb-20 text-center flex flex-col items-center px-4">
+          
+          <motion.div
+            initial={{ rotate: -10, scale: 0.8 }}
+            animate={{ rotate: [0, -10, 10, -5, 0], scale: 1 }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="bg-[#FFE600] p-6 border-8 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] mb-8 inline-block"
+          >
+            <CloudCog size={80} strokeWidth={2} className="text-black" />
+          </motion.div>
+
+          <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter mb-8 text-black drop-shadow-[4px_4px_0px_rgba(0,229,255,1)]">
+            Coming Soon!
+          </h2>
+
+          <p className="max-w-2xl text-lg md:text-xl font-bold border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(255,0,84,1)] leading-relaxed">
+            Sistem <span className="text-[#FF0054] underline decoration-4 underline-offset-4">Cloud Gallery</span> sedang dirakit oleh sistem. Nantinya, semua hasil jepretan dari Editor akan otomatis dipajang di sini secara <span className="bg-[#FFE600] px-2 border-2 border-black">Real-Time!</span>
+          </p>
+
+          {/* Call to Action Kembali ke Studio */}
+          <div className="mt-12 w-full max-w-sm">
+            <Link 
+              href="/studio" 
+              className="flex items-center justify-center gap-3 w-full py-4 bg-[#FF0054] text-white font-black text-xl uppercase tracking-widest border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-[#FF3377] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all -rotate-2"
             >
-              {/* Kartu Photostrip */}
-              <div className="bg-white border-4 border-black p-3 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group-hover:-translate-y-2 group-hover:shadow-[12px_12px_0px_0px_rgba(255,0,84,1)] transition-all duration-300">
-                
-                <div 
-                  className="w-full bg-gray-200 border-2 border-black overflow-hidden relative"
-                  style={{ height: `${strip.height}px` }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={strip.imageUrl} 
-                    alt={`Photostrip ${strip.id}`}
-                    className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-                    loading="lazy" // Native lazy loading
-                  />
-                  
-                  {/* Badge Tema */}
-                  <div className="absolute top-2 left-2 bg-[#FFE600] text-black text-[10px] font-black uppercase px-2 py-1 border-2 border-black">
-                    {strip.theme}
-                  </div>
-                </div>
-
-                {/* Info Bawah Kartu */}
-                <div className="flex justify-between items-center mt-3 px-1">
-                  <span className="font-black text-sm uppercase italic">Studio26</span>
-                  <div className="flex items-center gap-1 text-sm font-bold text-[#FF0054]">
-                    <Star size={16} fill="currentColor" /> {strip.likes}
-                  </div>
-                </div>
-
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </main>
-
-
-
-      {/* Call to Action di Bawah */}
-      <div className="max-w-md mx-auto mt-20 mb-10 text-center">
-        <Link 
-          href="/studio" 
-          className="inline-flex items-center justify-center gap-3 w-full py-4 bg-[#FF0054] text-white font-black text-xl uppercase tracking-widest border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:bg-[#FF3377] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all -rotate-1"
-        >
-          Join The Gallery <ArrowLeft className="rotate-180" strokeWidth={3} />
-        </Link>
+              <ArrowLeft strokeWidth={3} /> Masuk ke Studio
+            </Link>
+          </div>
+        </main>
       </div>
 
       {/* FOOTER MANGA STYLE DENGAN INFORMASI TECH STACK */}
-      <footer className="w-full bg-[#FFE600] border-t-8 border-black mt-20 py-16 relative z-10">
+      <footer className="w-full bg-[#FFE600] border-t-8 border-black py-16 relative z-10 mt-auto">
         <div className="max-w-6xl mx-auto px-6 flex flex-col lg:flex-row justify-between items-center gap-10 text-center lg:text-left">
           
           <div className="flex flex-col gap-3">
