@@ -17,7 +17,6 @@ const LIVE_FILTERS = [
 
 export default function StudioPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const router = useRouter();
   
   const { photos, addPhoto, updatePhoto, clearPhotos } = usePhotoStore();
@@ -36,13 +35,18 @@ export default function StudioPage() {
   const [selectedFilterId, setSelectedFilterId] = useState("normal");
   const currentFilter = LIVE_FILTERS.find(f => f.id === selectedFilterId) || LIVE_FILTERS[0];
 
-  // ==========================================
-  // 🟢 NEW: STABILITY & HARDWARE STATES
-  // ==========================================
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
 
+  // 1. EFFECT KHUSUS: Bersihkan memori HANYA saat pertama kali buka studio
+  useEffect(() => {
+    clearPhotos();
+    setIsReviewMode(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 2. EFFECT KAMERA: Otomatis restart lensa kalau user ganti kamera depan/belakang
   useEffect(() => {
     let currentStream: MediaStream | null = null;
     setIsCameraReady(false);
@@ -58,7 +62,6 @@ export default function StudioPage() {
         
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          // FLAG: Aktifkan START hanya setelah metadata video masuk
           videoRef.current.onloadedmetadata = () => {
             setIsCameraReady(true);
             videoRef.current?.play();
@@ -66,40 +69,36 @@ export default function StudioPage() {
         }
       } catch (err: any) {
         console.error("Camera Error:", err);
-        if (err.name === 'NotAllowedError') {
-          setCameraError("Akses kamera ditolak. Silakan izinkan di pengaturan browser Anda.");
-        } else if (err.name === 'NotFoundError') {
-          setCameraError("Kamera tidak ditemukan pada perangkat ini.");
-        } else {
-          setCameraError("Gagal mengakses kamera. Pastikan tidak sedang digunakan aplikasi lain.");
-        }
+        setCameraError("Gagal mengakses kamera. Izinkan akses atau pastikan kamera tidak dipakai aplikasi lain.");
       }
     };
 
     initCamera();
 
-    // CLEANUP: Matikan track sebelum render ulang (penting saat switch kamera)
     return () => {
-      if (currentStream) {
-        currentStream.getTracks().forEach((track) => track.stop());
-      }
+      if (currentStream) currentStream.getTracks().forEach((track) => track.stop());
     };
-  }, [facingMode]); // Re-run jika switch kamera depan/belakang
+  }, [facingMode]);
 
+  // ==============================================================
+  // 🟢 CORE FIX: VIRTUAL MEMORY CANVAS (Anti-Gagal, Anti DOM Block)
+  // ==============================================================
   const capturePhoto = (indexToUpdate?: number) => {
-    if (videoRef.current && canvasRef.current) {
+    try {
+      if (!videoRef.current) return;
       const video = videoRef.current;
-      const canvas = canvasRef.current;
+      
+      // Bikin Canvas Siluman langsung di RAM (tidak perlu elemen HTML)
+      const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Keamanan resolusi ekstra
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
       
       if (ctx) {
-        // BUGFIX: Reset Transform mutlak sebelum modifikasi koordinat
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         
-        // Hanya mirror jika kamera depan DAN toggle mirror aktif
         if (isMirrored && facingMode === "user") {
           ctx.translate(canvas.width, 0);
           ctx.scale(-1, 1);
@@ -108,11 +107,10 @@ export default function StudioPage() {
         ctx.filter = currentFilter.css;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // BUGFIX: Reset Transform lagi untuk keamanan state canvas berikutnya
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.filter = "none";
         
-        // MEMORY OPTIMIZATION: Convert ke JPEG kualitas 85% alih-alih PNG
+        // Kompres ke JPEG agar RAM tidak bocor / lemot
         const photoDataUrl = canvas.toDataURL("image/jpeg", 0.85);
         
         if (typeof indexToUpdate === 'number') {
@@ -121,16 +119,18 @@ export default function StudioPage() {
           addPhoto(photoDataUrl);
         }
       }
+    } catch (error) {
+      console.error("Proses Jepret Gagal:", error);
     }
   };
 
   const playSound = (soundPath: string) => {
     const audio = new Audio(soundPath);
-    audio.play().catch((err) => console.log("Gagal memutar suara (auto-play policy):", err));
+    audio.play().catch(() => {}); // Abaikan error auto-play browser
   };
 
   const startSequence = async () => {
-    if (!isCameraReady) return; // Proteksi tambahan
+    if (!isCameraReady) return; 
     
     setIsShooting(true);
     let currentShots = 0;
@@ -188,7 +188,6 @@ export default function StudioPage() {
 
   const toggleCamera = () => {
     setFacingMode(prev => prev === "user" ? "environment" : "user");
-    // Matikan mirror otomatis kalau pakai kamera belakang
     if (facingMode === "user") setIsMirrored(false); 
   };
 
@@ -210,12 +209,10 @@ export default function StudioPage() {
 
         <main className="max-w-5xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start flex-grow">
           
-          {/* LAYAR UTAMA KAMERA */}
           <div className="lg:col-span-8 relative bg-white border-8 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] p-2 h-full flex flex-col">
             
             <div className="relative w-full aspect-[4/3] bg-black overflow-hidden border-4 border-black flex-grow flex items-center justify-center">
               
-              {/* ERROR HANDLING UI */}
               {cameraError ? (
                 <div className="text-center p-6 flex flex-col items-center gap-4">
                   <AlertTriangle size={48} className="text-[#FF0054]" />
@@ -264,7 +261,6 @@ export default function StudioPage() {
               </AnimatePresence>
             </div>
 
-            {/* QUICK CAMERA TOOLS */}
             {!isReviewMode && isCameraReady && !cameraError && (
               <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
                 <button onClick={() => setShowGrid(!showGrid)} aria-pressed={showGrid} className={`p-3 border-2 border-black rounded-full transition-transform hover:scale-110 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${showGrid ? 'bg-[#00E5FF] text-black' : 'bg-white text-black'}`} title="Rule of Thirds Grid">
@@ -280,7 +276,6 @@ export default function StudioPage() {
             )}
           </div>
 
-          {/* PANEL KONTROL KANAN */}
           <div className="lg:col-span-4 flex flex-col gap-4 h-full">
             
             {!isReviewMode ? (
@@ -322,7 +317,6 @@ export default function StudioPage() {
 
                 <button 
                   onClick={startSequence} 
-                  // FLAG: Tombol start mati jika kamera belum siap atau error
                   disabled={isShooting || !isCameraReady || !!cameraError} 
                   className="w-full py-6 bg-[#FFE600] font-black text-3xl uppercase tracking-widest border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-[8px] active:translate-y-[8px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mt-auto"
                 >
@@ -330,7 +324,6 @@ export default function StudioPage() {
                 </button>
               </>
             ) : (
-              // PANEL REVIEW MODE
               <div className="bg-white p-5 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full flex flex-col">
                 <h3 className="font-black uppercase text-lg mb-4 flex items-center gap-2 border-b-4 border-black pb-2">
                   <Check size={24} className="text-[#00D46A]" /> Check Photos
