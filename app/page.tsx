@@ -51,7 +51,7 @@ export default function LandingPage() {
           className="inline-flex items-center gap-2 px-5 py-2 bg-[#FFE600] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm font-black uppercase tracking-widest mb-10 -rotate-2"
         >
           <Sparkles size={16} fill="currentColor" />
-          <span>Make A Moment</span>
+          <span>Create & Share Your Photostrip</span>
         </motion.div>
 
         {/* Hero Title */}
@@ -61,7 +61,7 @@ export default function LandingPage() {
           transition={{ duration: 0.5, type: "spring" as const, bounce: 0.5 }}
           className="text-6xl md:text-8xl font-black tracking-tighter mb-6 leading-none uppercase italic"
         >
-          Isekai Your <br className="hidden md:block" />
+          Level Up Your <br className="hidden md:block" />
           <span className="inline-block bg-[#FF0054] text-white px-4 py-2 mt-2 border-4 border-black -skew-x-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             Photostrip
           </span>
@@ -74,7 +74,7 @@ export default function LandingPage() {
           transition={{ delay: 0.3 }}
           className="text-xl md:text-2xl font-bold max-w-2xl mb-12 bg-white inline-block px-4 py-2 border-2 border-black border-dashed"
         >
-          Masuk ke dimensi baru. Abadikan momen seru bareng temen, sahabat atau pacar dengan Photobooth digital menarik dan keren!
+          Bikin photostrip digital unik dalam hitungan detik. Cocok untuk teman, pasangan, komunitas, dan momen spesial lainnya.
         </motion.p>
 
         {/* CTAs */}
