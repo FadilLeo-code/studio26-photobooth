@@ -192,25 +192,31 @@ export default function StudioPage() {
   };
 
   // Sequence Start (Bisa untuk Normal atau Spesifik Retake)
+  // Sequence Start (Bisa untuk Normal atau Spesifik Retake)
   const startSequence = async () => {
     if (cameraStatus !== "ready") return; 
     
     setIsShooting(true);
-    let currentShots = retakeIndex !== null ? targetShots - 1 : 0; // Skip counter if retake
+    
+    // PERBAIKAN LOGIKA: Tentukan berapa kali harus jepret
     const isRetakeMode = retakeIndex !== null;
+    const indexToRetake = retakeIndex; // Amankan index ke variabel lokal
+    const maxShots = isRetakeMode ? 1 : targetShots; // Jika retake cuma 1x jepret
+    let currentShots = 0;
 
     const takeShot = async () => {
-      // Jika mode Retake, cukup ambil 1 foto lalu kembali ke Review Mode
-      if (isRetakeMode || currentShots >= targetShots) {
+      // Cek apakah jumlah jepretan sudah selesai
+      if (currentShots >= maxShots) {
         setIsShooting(false);
         if (isRetakeMode) {
           setRetakeIndex(null); // Bersihkan status retake
-          setActivePhotoIndex(retakeIndex); // Fokus ke foto yang baru diretake
+          if (indexToRetake !== null) setActivePhotoIndex(indexToRetake); // Fokus ke foto baru
         }
         setIsReviewMode(true); 
         return;
       }
 
+      // Hitung Mundur
       for (let i = timerDuration; i > 0; i--) {
         setCountdown(i);
         playSound("/beep.mp3"); 
@@ -221,21 +227,20 @@ export default function StudioPage() {
       setFlash(true); 
       playSound("/shutter.mp3"); 
       
-      // Jika sedang retake, oper index spesifik. Jika normal, tidak oper index.
-      capturePhoto(isRetakeMode ? retakeIndex : undefined); 
+      // Jepret! (Oper index spesifik jika sedang mode retake)
+      capturePhoto(isRetakeMode ? indexToRetake! : undefined); 
       
+      currentShots++;
+      
+      // Update angka counter di pojok kanan atas hanya jika bukan retake
       if (!isRetakeMode) {
-        currentShots++;
         setShotsTaken(currentShots);
       }
 
+      // Jeda sebelum foto berikutnya (atau sebelum kembali ke review)
       setTimeout(() => {
         setFlash(false); 
-        if (!isRetakeMode) {
-          setTimeout(takeShot, 800); 
-        } else {
-          takeShot(); // Langsung trigger end loop untuk retake
-        }
+        setTimeout(takeShot, 800); 
       }, 200);
     };
 
